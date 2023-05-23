@@ -11,11 +11,11 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
 
-    long store(final MessageRequest messageInput) {
+    public long store(final Message messageInput) {
         return messageRepository.store(messageInput);
     }
 
-    Message find(final long messageId) {
+    public Message find(final long messageId) {
         return messageRepository.findById(messageId)
                 .map(messageMapper::mapFrom)
                 .orElseThrow(() -> new MessageNotFoundException("message not found"));

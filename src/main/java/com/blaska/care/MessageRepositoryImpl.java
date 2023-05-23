@@ -1,11 +1,11 @@
 package com.blaska.care;
 
+import com.blaska.care.application.MessageRequest;
 import com.blaska.care.model.DBMessage;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,7 +18,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     private final AtomicLong identifier = new AtomicLong(0L);
 
     @Override
-    public long store(final MessageRequest message) {
+    public long store(final Message message) {
         long nextId = identifier.incrementAndGet();
         var messageRecord = mapMessageRecord(nextId, message);
         messageStore.put(nextId, messageRecord);
@@ -30,7 +30,7 @@ public class MessageRepositoryImpl implements MessageRepository {
         return ofNullable(messageStore.get(messageId));
     }
 
-    private DBMessage mapMessageRecord(final long nextId, final MessageRequest message) {
+    private DBMessage mapMessageRecord(final long nextId, final Message message) {
         return DBMessage.builder()
                 .id(nextId)
                 .customerId(message.getCustomerName())

@@ -1,4 +1,4 @@
-package com.blaska.care;
+package com.blaska.care.application;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MessageRequest {
-    @JsonProperty("customer")
-    private String customerName;
 
     @JsonProperty("message")
     private String message;

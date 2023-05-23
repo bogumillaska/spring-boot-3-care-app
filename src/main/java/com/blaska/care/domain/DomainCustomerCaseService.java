@@ -1,5 +1,6 @@
 package com.blaska.care.domain;
 
+import com.blaska.care.application.ClientCaseRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -15,8 +16,8 @@ public class DomainCustomerCaseService implements CustomerCaseService {
     }
 
     @Override
-    public void createCustomerCase() {
-        
+    public long createCustomerCase(final CustomerCase customerCase) {
+        return customerCaseRepository.save(customerCase);
     }
 
     @Override

@@ -1,19 +1,23 @@
 package com.blaska.care;
 
+import com.blaska.care.application.MessageRequest;
+import com.blaska.care.application.MessageResourceV2;
 import com.blaska.utils.care.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(MessageResource.class)
+@WebMvcTest(MessageResourceV2.class)
 class MessageResourceIntegrationTest {
 
     @Autowired
@@ -21,10 +25,12 @@ class MessageResourceIntegrationTest {
 
     @Test
     void shouldReturn202WhenMessageCreatedByPOST() throws Exception {
-        var message = new MessageRequest("Jérémie Durand", "Hello, I have an issue with my new phone");
-        mvc.perform(MockMvcRequestBuilders.post("/message")
+        var message = new MessageRequest("Hello, I have an issue with my new phone");
+        var authorization = "usertoken1234";
+        mvc.perform(MockMvcRequestBuilders.post("/messages")
                 .content(TestUtils.toJson(message))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, authorization)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
     }

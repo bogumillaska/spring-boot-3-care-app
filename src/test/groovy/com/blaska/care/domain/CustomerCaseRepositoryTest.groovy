@@ -1,6 +1,6 @@
 package com.blaska.care.domain
 
-
+import com.blaska.care.infrastructure.InMemoryCustomerCaseRepository
 import spock.lang.Specification
 
 class CustomerCaseRepositoryTest extends Specification {
@@ -12,7 +12,10 @@ class CustomerCaseRepositoryTest extends Specification {
             String customerId = "1234"
             String customerName = "Jérémie Durand"
         and:
-            CustomerCase customerCase = new CustomerCase(customerId, customerName)
+            CustomerCase customerCase = CustomerCase.builder()
+                    .customerId(customerId)
+                    .customerName(customerName)
+                    .build()
         when:
             customerCaseRepository.save(customerCase)
         then:
