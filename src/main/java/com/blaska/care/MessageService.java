@@ -1,23 +1,13 @@
 package com.blaska.care;
 
 import com.blaska.care.exception.MessageNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class MessageService {
+import java.util.List;
+import java.util.Optional;
 
-    private final MessageRepository messageRepository;
-    private final MessageMapper messageMapper;
+public interface MessageService {
+    long store(final Message messageInput);
 
-    public long store(final Message messageInput) {
-        return messageRepository.store(messageInput);
-    }
-
-    public Message find(final long messageId) {
-        return messageRepository.findById(messageId)
-                .map(messageMapper::mapFrom)
-                .orElseThrow(() -> new MessageNotFoundException("message not found"));
-    }
+    Optional<Message> find(final long messageId);
+    List<Message> findByCustomer(final String customerId);
 }

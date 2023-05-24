@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/case")
 @RequiredArgsConstructor
 class CaseResource {
 
-    private final MessageService messageService;
+    private final DomainMessageService messageService;
     private final CustomerCaseService customerCaseService;
 
     @GetMapping
@@ -24,7 +25,7 @@ class CaseResource {
 
     @PostMapping
     ResponseEntity<Object> createFromMessage(@RequestBody CreateCaseRequest createCaseRequest) {
-        Message message = messageService.find(createCaseRequest.getMessageId());
+        Optional<Message> message = messageService.find(createCaseRequest.getMessageId());
         return ResponseEntity.created(URI.create("case/1")).build();
     }
 }
