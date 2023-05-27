@@ -1,6 +1,7 @@
-package com.blaska.care;
+package com.blaska.care.infrastructure;
 
-import com.blaska.care.model.DBMessage;
+import com.blaska.care.domain.Message;
+import com.blaska.care.domain.MessageRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
@@ -13,14 +14,14 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 @Repository
-public class MessageRepositoryImpl implements MessageRepository {
+public class InMemoryMessageRepository implements MessageRepository {
 
     private final MessageMapper messageMapper;
 
     private final Map<String, List<DBMessage>> messageStore = new ConcurrentHashMap<>();
     private final AtomicLong identifier = new AtomicLong(0L);
 
-    MessageRepositoryImpl(final MessageMapper messageMapper) {
+    InMemoryMessageRepository(final MessageMapper messageMapper) {
         this.messageMapper = messageMapper;
     }
 

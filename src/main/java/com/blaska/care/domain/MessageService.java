@@ -1,6 +1,4 @@
-package com.blaska.care;
-
-import com.blaska.care.exception.MessageNotFoundException;
+package com.blaska.care.domain;
 
 import java.util.List;
 import java.util.Optional;

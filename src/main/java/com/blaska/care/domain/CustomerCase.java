@@ -1,7 +1,6 @@
 package com.blaska.care.domain;
 
 
-import com.blaska.care.Message;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -9,11 +8,11 @@ import lombok.With;
 import java.util.List;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @With
 public class CustomerCase {
     long caseId;
-    String customerId;
+    String customerReference;
     String customerName;
 
     List<Message> messages;

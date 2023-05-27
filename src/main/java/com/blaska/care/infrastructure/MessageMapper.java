@@ -1,12 +1,12 @@
-package com.blaska.care;
+package com.blaska.care.infrastructure;
 
-import com.blaska.care.model.DBMessage;
+import com.blaska.care.domain.Message;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MessageMapper {
+class MessageMapper {
 
-    public Message mapFrom(DBMessage storedMessage){
+    Message mapFrom(DBMessage storedMessage){
         return Message.builder()
                 .messageId(storedMessage.getId())
                 .message(storedMessage.getMessage())

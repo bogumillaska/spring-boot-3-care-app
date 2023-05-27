@@ -1,4 +1,4 @@
-package com.blaska.care.model;
+package com.blaska.care.infrastructure;
 
 import lombok.Builder;
 import lombok.Getter;

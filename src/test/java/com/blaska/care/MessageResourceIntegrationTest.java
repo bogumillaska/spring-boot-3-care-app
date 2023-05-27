@@ -1,7 +1,7 @@
 package com.blaska.care;
 
 import com.blaska.care.application.MessageRequest;
-import com.blaska.care.application.MessageResourceV2;
+import com.blaska.care.application.MessageResource;
 import com.blaska.utils.care.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(MessageResourceV2.class)
+@WebMvcTest(MessageResource.class)
 class MessageResourceIntegrationTest {
 
     @Autowired

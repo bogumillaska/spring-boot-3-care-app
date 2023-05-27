@@ -1,4 +1,4 @@
-package com.blaska.care;
+package com.blaska.care.domain;
 
 import com.blaska.care.exception.MessageNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import java.util.Optional;
 public class DomainMessageService implements MessageService {
 
     private final MessageRepository messageRepository;
-    private final MessageMapper messageMapper;
 
     public long store(final Message messageInput) {
         return messageRepository.store(messageInput);

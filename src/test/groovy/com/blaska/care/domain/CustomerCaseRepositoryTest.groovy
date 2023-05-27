@@ -13,7 +13,7 @@ class CustomerCaseRepositoryTest extends Specification {
             String customerName = "Jérémie Durand"
         and:
             CustomerCase customerCase = CustomerCase.builder()
-                    .customerId(customerId)
+                    .customerReference(customerId)
                     .customerName(customerName)
                     .build()
         when:

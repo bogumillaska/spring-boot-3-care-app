@@ -1,30 +1,31 @@
 package com.blaska.care.application;
 
 import com.blaska.authorization.AuthorizationService;
-import com.blaska.care.Message;
-import com.blaska.care.DomainMessageService;
+import com.blaska.care.domain.Message;
+import com.blaska.care.domain.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
 @RequiredArgsConstructor
-public class MessageResourceV2 {
+public class MessageResource {
 
-    private final DomainMessageService messageService;
+    private final MessageService messageService;
     private final AuthorizationService authorizationService;
 
     @PostMapping("messages")
     public ResponseEntity<Object> sendMessage(@RequestHeader(AUTHORIZATION) String authorizationHeader,
                                               @RequestBody MessageRequest messageRequest) {
         if (!authorizationService.isValidToken(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         var clientId = authorizationService.getClientIdFromToken(authorizationHeader);
 
@@ -33,14 +34,23 @@ public class MessageResourceV2 {
     }
 
     @GetMapping("messages")
-    public ResponseEntity<Object> getMessages(@RequestHeader(AUTHORIZATION) String authorizationHeader) {
+    public ResponseEntity<List<MessageDTO>> getMessages(@RequestHeader(AUTHORIZATION) String authorizationHeader) {
         if (!authorizationService.isValidToken(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         var clientId = authorizationService.getClientIdFromToken(authorizationHeader);
 
         var messages = messageService.findByCustomer(clientId);
-        return ResponseEntity.ok(messages);
+        var messagesDTO = messages.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(messagesDTO);
+    }
+
+    private MessageDTO mapToDto(Message message) {
+        return MessageDTO.builder()
+                .message(message.getMessage())
+                .build();
     }
 
 
