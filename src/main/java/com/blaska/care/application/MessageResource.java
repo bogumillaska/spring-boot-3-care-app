@@ -3,6 +3,7 @@ package com.blaska.care.application;
 import com.blaska.authorization.AuthorizationService;
 import com.blaska.care.domain.Message;
 import com.blaska.care.domain.MessageService;
+import com.blaska.care.exception.MessageNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +28,11 @@ public class MessageResource {
         if (!authorizationService.isValidToken(authorizationHeader)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        var clientId = authorizationService.getClientIdFromToken(authorizationHeader);
+        var sender = authorizationService.getCredentialsFromToken(authorizationHeader);
 
-        var messageId = messageService.store(mapToDomain(clientId, messageRequest));
-        return ResponseEntity.created(URI.create("messages/" + messageId)).build();
+        var messageId = messageService.store(mapToDomain(sender, messageRequest));
+        return ResponseEntity.created(URI.create("messages/" + messageId))
+                .body(new MessageResponse(messageId));
     }
 
     @GetMapping("messages")
@@ -38,12 +40,29 @@ public class MessageResource {
         if (!authorizationService.isValidToken(authorizationHeader)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        var clientId = authorizationService.getClientIdFromToken(authorizationHeader);
+        var clientId = authorizationService.getCredentialsFromToken(authorizationHeader);
 
         var messages = messageService.findByCustomer(clientId);
         var messagesDTO = messages.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(messagesDTO);
+    }
+
+    @GetMapping("messages/{id}")
+    public ResponseEntity<MessageDTO> getMessage(@RequestHeader(AUTHORIZATION) String authorizationHeader,
+                                                 @PathVariable("id") long messageId) {
+        if (!authorizationService.isValidToken(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        var clientId = authorizationService.getCredentialsFromToken(authorizationHeader);
+
+        var messages = messageService.findByCustomer(clientId);
+        var messagesDTO = messages.stream()
+                .filter(message -> message.getMessageId() == messageId)
+                .map(this::mapToDto)
+                .findAny()
+                .orElseThrow(() -> new MessageNotFoundException("Message with provided id does not exist"));
         return ResponseEntity.ok(messagesDTO);
     }
 
@@ -54,9 +73,9 @@ public class MessageResource {
     }
 
 
-    private Message mapToDomain(String clientId, MessageRequest messageRequest) {
+    private Message mapToDomain(String sender, MessageRequest messageRequest) {
         return Message.builder()
-                .customerId(clientId)
+                .sender(sender)
                 .message(messageRequest.getMessage())
                 .build();
     }

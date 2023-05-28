@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 @Repository
@@ -19,6 +18,7 @@ public class InMemoryMessageRepository implements MessageRepository {
     private final MessageMapper messageMapper;
 
     private final Map<String, List<DBMessage>> messageStore = new ConcurrentHashMap<>();
+    private final Map<Long, DBMessage> messageByIdIndex = new ConcurrentHashMap<>();
     private final AtomicLong identifier = new AtomicLong(0L);
 
     InMemoryMessageRepository(final MessageMapper messageMapper) {
@@ -29,18 +29,21 @@ public class InMemoryMessageRepository implements MessageRepository {
     @Override
     public long store(final Message message) {
         long nextId = identifier.incrementAndGet();
-        List<DBMessage> messages = messageStore.get(message.getCustomerId());
+        List<DBMessage> messages = messageStore.get(message.getSender());
         if (CollectionUtils.isEmpty(messages)) {
             messages = new ArrayList<>();
         }
-        messages.add(mapMessageRecord(nextId, message));
-        messageStore.put(message.getCustomerId(), messages);
+        var messageToSave = mapMessageRecord(nextId, message);
+        messages.add(messageToSave);
+        messageStore.put(message.getSender(), messages);
+        messageByIdIndex.put(nextId, messageToSave);
         return nextId;
     }
 
     @Override
     public Optional<Message> findById(final long messageId) {
-        return empty();
+        return ofNullable(messageByIdIndex.get(messageId))
+                .map(messageMapper::mapFrom);
     }
 
     @Override
@@ -55,7 +58,7 @@ public class InMemoryMessageRepository implements MessageRepository {
     private DBMessage mapMessageRecord(final long nextId, final Message message) {
         return DBMessage.builder()
                 .id(nextId)
-                .customerId(message.getCustomerId())
+                .customerId(message.getSender())
                 .message(message.getMessage())
                 .build();
     }

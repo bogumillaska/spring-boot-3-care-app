@@ -23,16 +23,16 @@ public class DomainCustomerCaseService implements CustomerCaseService {
     }
 
     @Override
-    public List<CustomerCase> findByCustomer(final String customerId) {
-        return customerCaseRepository.findAllCustomerCases(customerId)
+    public List<CustomerCase> findByCustomer(final String customerReference) {
+        return customerCaseRepository.findAllCustomerCases(customerReference)
                 .orElse(Collections.emptyList());
     }
 
     @Override
-    public boolean addMessageToCase(final String clientId, final long caseId, final Message message) {
-        var customerCase = customerCaseRepository.findById(clientId, caseId)
+    public boolean addMessageToCase(final long caseId, final Message message) {
+        var customerCase = customerCaseRepository.findById(caseId)
                 .orElseThrow(() -> new CustomerCaseNotFoundException(
-                        String.format("Client case number %s not found for customer %d", clientId, caseId)));
+                        String.format("Client case number %s", caseId)));
 
         customerCase.getMessages()
                 .add(message);
@@ -41,10 +41,10 @@ public class DomainCustomerCaseService implements CustomerCaseService {
     }
 
     @Override
-    public void updateCase(final String clientId, final long caseId, final CustomerCase customerCasePatch) {
-        var customerCase = customerCaseRepository.findById(clientId, caseId)
+    public void updateCase(final long caseId, final CustomerCase customerCasePatch) {
+        var customerCase = customerCaseRepository.findById(caseId)
                 .orElseThrow(() -> new CustomerCaseNotFoundException(
-                        String.format("Client case number %s not found for customer %d", clientId, caseId)));
+                        String.format("Client case number %s", caseId)));
 
         var updatedCase = mapPatchToCustomerCase(customerCase, customerCasePatch);
         customerCaseRepository.update(updatedCase);

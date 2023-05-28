@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface CustomerCaseRepository {
 
-    Optional<CustomerCase> findById(final String clientId, long caseId);
+    Optional<CustomerCase> findById(long caseId);
     Optional<List<CustomerCase>> findAllCustomerCases(String customerId);
     long save(CustomerCase customerCase);
     void update(CustomerCase customerCase);

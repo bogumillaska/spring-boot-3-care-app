@@ -4,13 +4,16 @@ import com.blaska.authorization.AuthorizationService;
 import com.blaska.care.domain.CustomerCase;
 import com.blaska.care.domain.CustomerCaseService;
 import com.blaska.care.domain.Message;
+import com.blaska.care.domain.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -20,32 +23,37 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class ClientCaseResource {
 
     private final CustomerCaseService customerCaseService;
+    private final MessageService messageService;
     private final AuthorizationService authorizationService;
 
     @PostMapping
     public ResponseEntity<Object> createClientCase(@RequestHeader(AUTHORIZATION) String authorizationHeader,
                                                    @RequestBody ClientCaseRequest clientCaseRequest) {
         if (!authorizationService.isValidToken(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String clientId = authorizationService.getClientIdFromToken(authorizationHeader);
+        if (!authorizationService.isCsrToken(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
-        var caseId = customerCaseService.createCustomerCase(mapToDomain(clientId, clientCaseRequest));
-        return ResponseEntity.created(URI.create("/case/" + caseId)).build();
+        var message = messageService.find(clientCaseRequest.getMessageId());
+
+        var caseId = customerCaseService.createCustomerCase(mapToCustomerCase(message));
+        return ResponseEntity.created(URI.create("/cases/" + caseId)).build();
     }
 
     @PostMapping("/{caseId}/messages")
     public ResponseEntity<Object> appendMessageToCase(@RequestHeader(AUTHORIZATION) String authorizationHeader,
                                                       @PathVariable("caseId") long caseId,
-                                                      @RequestBody ClientCaseRequest clientCaseRequest) {
+                                                      @RequestBody MessageRequest messageRequest) {
         if (!authorizationService.isValidToken(authorizationHeader)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String clientId = authorizationService.getClientIdFromToken(authorizationHeader);
+        String sender = authorizationService.getCredentialsFromToken(authorizationHeader);
 
-        var result = customerCaseService.addMessageToCase(clientId, caseId, mapMessageToDomain(clientCaseRequest));
+        var result = customerCaseService.addMessageToCase(caseId, mapMessageToDomain(sender, messageRequest));
         if (result)
             return ResponseEntity.status(HttpStatus.CREATED).build();
         else
@@ -60,10 +68,42 @@ public class ClientCaseResource {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized");
         }
 
-        String clientId = authorizationService.getClientIdFromToken(authorizationHeader);
-
-        customerCaseService.updateCase(clientId, caseId, mapPatchToDomain(clientCasePatch));
+        customerCaseService.updateCase(caseId, mapPatchToDomain(clientCasePatch));
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/{clientReference}", produces="application/json")
+    public ResponseEntity<List<ClientCaseDTO>> getCasesByClientReference(@RequestHeader(AUTHORIZATION) String authorizationHeader,
+                                                                         @PathVariable("clientReference") String customerReference) {
+        if (!authorizationService.isValidToken(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (!authorizationService.isCsrToken(authorizationHeader)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        var cases = customerCaseService.findByCustomer(customerReference).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(cases);
+    }
+
+    private ClientCaseDTO mapToDTO(final CustomerCase customerCase) {
+        var clientCaseDTOBuilder = ClientCaseDTO.builder()
+                .caseId(customerCase.getCaseId())
+                .customerName(customerCase.getCustomerName())
+                .customerReference(customerCase.getCustomerReference());
+
+        var messageDTOs = customerCase.getMessages().stream()
+                .map(m -> MessageDTO.builder()
+                        .message(m.getMessage())
+                        .sender(m.getSender())
+                        .build())
+                .collect(Collectors.toList());
+
+        clientCaseDTOBuilder.messages(messageDTOs);
+        return clientCaseDTOBuilder.build();
     }
 
     private CustomerCase mapPatchToDomain(final ClientCasePatch clientCasePatch) {
@@ -72,19 +112,23 @@ public class ClientCaseResource {
                 .build();
     }
 
-    private CustomerCase mapToDomain(String clientId, ClientCaseRequest clientCaseRequest) {
-        var initialMessage = mapMessageToDomain(clientCaseRequest);
+    private CustomerCase mapToCustomerCase(Message message) {
+        List<Message> messageList = new ArrayList<>();
+        messageList.add(Message.builder()
+                .sender(message.getSender())
+                .message(message.getMessage())
+                .build());
 
         return CustomerCase.builder()
-                .customerName(clientId)
-                .customerReference(clientCaseRequest.getClientReference())
-                .messages(List.of(initialMessage))
+                .customerName(message.getSender())
+                .messages(messageList)
                 .build();
     }
 
-    private Message mapMessageToDomain(ClientCaseRequest clientCaseRequest) {
+    private Message mapMessageToDomain(final String sender, MessageRequest message) {
         return Message.builder()
-                .message(clientCaseRequest.getMessage())
+                .sender(sender)
+                .message(message.getMessage())
                 .build();
     }
 

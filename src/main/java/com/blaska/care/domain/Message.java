@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class Message {
     private long messageId;
-    private String customerId;
+    private String sender;
     private String message;
 }

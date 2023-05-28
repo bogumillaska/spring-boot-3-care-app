@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,9 +16,9 @@ public class DomainMessageService implements MessageService {
         return messageRepository.store(messageInput);
     }
 
-    public Optional<Message> find(final long messageId) {
-        return Optional.ofNullable(messageRepository.findById(messageId)
-                .orElseThrow(() -> new MessageNotFoundException("message not found")));
+    public Message find(final long messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new MessageNotFoundException("message not found"));
     }
 
     @Override

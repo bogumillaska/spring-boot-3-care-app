@@ -10,7 +10,12 @@ public class DummyAuthorizationService implements AuthorizationService {
     }
 
     @Override
-    public String getClientIdFromToken(final String authorizationHeader) {
+    public boolean isCsrToken(final String token) {
+        return !"usertoken1234".equals(token);
+    }
+
+    @Override
+    public String getCredentialsFromToken(final String authorizationHeader) {
         if ("usertoken1234".equals(authorizationHeader))
             return "Jérémie Durand";
         return "Sonia Valentin";

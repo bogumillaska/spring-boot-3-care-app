@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ClientCaseRequest {
+public class MessageResponse {
 
-    @JsonProperty("source-message-id")
+    @JsonProperty("message-id")
     private Long messageId;
 }

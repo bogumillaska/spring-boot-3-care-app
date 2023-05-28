@@ -11,7 +11,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @With
 public class CustomerCase {
-    long caseId;
+    Long caseId;
     String customerReference;
     String customerName;
 

@@ -5,9 +5,9 @@ import java.util.List;
 public interface CustomerCaseService {
 
     long createCustomerCase(final CustomerCase customerCase);
-    List<CustomerCase> findByCustomer(String customerId);
+    List<CustomerCase> findByCustomer(String customerReference);
 
-    boolean addMessageToCase(final String clientId, long caseId, Message message);
+    boolean addMessageToCase(long caseId, Message message);
 
-    void updateCase(String clientId, long caseId, CustomerCase customerCase);
+    void updateCase(long caseId, CustomerCase customerCase);
 }
